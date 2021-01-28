@@ -1,0 +1,1 @@
+This tmp directory is required by photofoundry
