@@ -1,10 +1,9 @@
 var mainDocument = app.activeDocument;
-var symbols = activeDocument.layerSets["symbols"];
-var copiedSymbols = activeDocument.layerSets["copied_symbols"];
+var elements = activeDocument.layerSets["elements"];
+var copiedElements = activeDocument.layerSets["copied_elements"];
 var text = activeDocument.layerSets["text"];
 var locations = activeDocument.layerSets["locations"];
 var toggles = activeDocument.layerSets["toggles"];
-var instructions = activeDocument.layerSets["instructions"];
 
 Object.keys = objKeysPolyfill();
 
@@ -13,23 +12,24 @@ createCards([
     {
         toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
         text: {
-            "title": "Hello world A",
-            "sub_title": "We are working A",
-            "desc": "And one day we will ride upon the heels of victory. A"
+            "title": "Hello world A1",
+            "sub_title": "We are working A1",
+            "desc": "And one day we will ride upon the heels of victory. A1"
         },
-        icons: {
+        elements: {
             "mod_1_1": "wonder"
         },
         print: true
     }, {
         toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
         text: {
-            "title": "Hello world B",
-            "sub_title": "We are working B",
-            "desc": "And one day we will ride upon the heels of victory. B"
+            "title": "Hello world B1",
+            "sub_title": "We are working B1",
+            "desc": "And one day we will ride upon the heels of victory. B1"
         },
-        icons: {
-            "mod_1_1": "wonder"
+        elements: {
+            "mod_2_1": "wealth",
+            "mod_2_2": "food",
         },
         print: true
     }
@@ -43,7 +43,7 @@ createCards([
             "sub_title": "We are working",
             "desc": "And one day we will ride upon the heels of victory."
         },
-        icons: {
+        elements: {
             "mod_3_1": "wealth",
             "mod_3_2": "wealth",
             "mod_3_3": "wealth"
@@ -60,7 +60,7 @@ createCards([
  *   text: {
  *     "loc_name": "text of the text block indicated by loc_name"
  *   },
- *   icons: {
+ *   elements: {
  *     "loc_name": "icon_name"
  *   }
  *   print: boolean
@@ -104,8 +104,10 @@ function createCards(items, config) {
     if (itemsPerSheet > 1) {
         printSheet(sheetIndex, cardPaths);
     }
+
     setup();
     prep(config.clean, config);
+    mainDocument.save();
     alert("Creation complete");
 }
 
@@ -114,8 +116,8 @@ function prep(item, config) {
         updateText(location, content, config);
     });
 
-    forEach(item.icons ? item.icons : [], function(location, iconName) {
-        updateIcon(location, iconName, config);
+    forEach(item.elements ? item.elements : [], function(location, iconName) {
+        updateElement(location, iconName, config);
     });
 
     forEach(item.toggles ? item.toggles : [], function(toggleName) {
@@ -133,9 +135,9 @@ function updateText(location, content, config) {
     }
 }
 
-function updateIcon(location, iconName, config) {
+function updateElement(location, iconName, config) {
     if (config.alert && ! doesLayerExist(locations.layers, location)) {
-        alert("No symbol found with name " + location);
+        alert("No element found with name " + location);
     } else {
         copyToReference(iconName, locations.layers[location]);
     }
@@ -151,7 +153,7 @@ function updateToggle(location, config) {
 }
 
 function setup() {
-    copiedSymbols.visible = true;
+    copiedElements.visible = true;
     text.visible = true;
     locations.visible = true;
     toggles.visible = true;
@@ -165,16 +167,20 @@ function setup() {
         layer.visible = false;
     }
 
-    deleteLayers(copiedSymbols.layers);
+    deleteLayers(copiedElements.layers);
 
-    symbols.visible = false;
-    instructions = false;
+    elements.visible = false;
 }
 
 function deleteLayers(layers) {
-    forEach(layers, function(layer) {
-        layer.remove();
-    });
+    // Cannto use the forEach method here because remove a layer messes up the indexing.
+    var layersToRemove = [];
+    for (var i = 0; i < layers.length; i++) {
+        layersToRemove.push(layers[i]);
+    }
+    for (var i = 0; i < layersToRemove.length; i++) {
+        layersToRemove[i].remove();
+    }
 }
 
 function hideLayers(layers) {
@@ -239,14 +245,14 @@ function printer(columns, rows) {
     };
 }
 
-function copyToReference(symbolName, locRef) {
-    var symbolRef = symbols.layers[symbolName];
-    var copiedSymbol = symbolRef.duplicate(copiedSymbols, ElementPlacement.PLACEATEND);
-    groupLayer(copiedSymbol);
-    var rasterizedSymbol = mergeGroup();
-    resizeByRef(rasterizedSymbol, locRef);
-    moveToReference(rasterizedSymbol, locRef);
-    rasterizedSymbol.visible = true;
+function copyToReference(elementName, locRef) {
+    var elementRef = elements.layers[elementName];
+    var copiedElement = elementRef.duplicate(copiedElements, ElementPlacement.PLACEATEND);
+    groupLayer(copiedElement);
+    var rasterizedElement = mergeGroup();
+    resizeByRef(rasterizedElement, locRef);
+    moveToReference(rasterizedElement, locRef);
+    rasterizedElement.visible = true;
     locRef.visible = false;
 }
 
@@ -271,47 +277,47 @@ function groupLayer(layer){
     app.activeDocument.activeLayer = oldActiveLayer;
 }
 
-function moveToReference(copiedSymbol, locRef) {
+function moveToReference(copiedElement, locRef) {
     var refBounds = locRef.bounds;
-    var copiedBounds = copiedSymbol.bounds;
-    var symbolRefWidth = refBounds[2] - refBounds[0];
-    var symbolRefHeight = refBounds[3] - refBounds[1];
-    var copiedSymbolWidth = copiedBounds[2] - copiedBounds[0];
-    var copiedSymbolHeight = copiedBounds[3] - copiedBounds[1];
+    var copiedBounds = copiedElement.bounds;
+    var elementRefWidth = refBounds[2] - refBounds[0];
+    var elementRefHeight = refBounds[3] - refBounds[1];
+    var copiedElementWidth = copiedBounds[2] - copiedBounds[0];
+    var copiedElementHeight = copiedBounds[3] - copiedBounds[1];
     var xOffset = 0;
     var yOffset = 0;
 
-    if (copiedSymbolWidth < symbolRefWidth) {
-        xOffset = (symbolRefWidth - copiedSymbolWidth) / 2;
+    if (copiedElementWidth < elementRefWidth) {
+        xOffset = (elementRefWidth - copiedElementWidth) / 2;
     }
-    if (copiedSymbolHeight < symbolRefHeight) {
-        yOffset = (symbolRefHeight - copiedSymbolHeight) / 2;
+    if (copiedElementHeight < elementRefHeight) {
+        yOffset = (elementRefHeight - copiedElementHeight) / 2;
     }
 
-    copiedSymbol.translate(refBounds[0] - copiedBounds[0] + xOffset, refBounds[1] - copiedBounds[1] + yOffset);
+    copiedElement.translate(refBounds[0] - copiedBounds[0] + xOffset, refBounds[1] - copiedBounds[1] + yOffset);
 }
 
-function resizeByRef(copiedSymbol, locRef) {
+function resizeByRef(copiedElement, locRef) {
     var refBounds = locRef.bounds;
-    var copiedBounds = copiedSymbol.bounds;
-    var symbolRefWidth = refBounds[2] - refBounds[0];
-    var symbolRefHeight = refBounds[3] - refBounds[1];
-    var copiedSymbolWidth = copiedBounds[2] - copiedBounds[0];
-    var copiedSymbolHeight = copiedBounds[3] - copiedBounds[1];
-    var percentWidth = (symbolRefWidth / copiedSymbolWidth) * 100;
-    var percentHeight = (symbolRefHeight / copiedSymbolHeight) * 100;
+    var copiedBounds = copiedElement.bounds;
+    var elementRefWidth = refBounds[2] - refBounds[0];
+    var elementRefHeight = refBounds[3] - refBounds[1];
+    var copiedElementWidth = copiedBounds[2] - copiedBounds[0];
+    var copiedElementHeight = copiedBounds[3] - copiedBounds[1];
+    var percentWidth = (elementRefWidth / copiedElementWidth) * 100;
+    var percentHeight = (elementRefHeight / copiedElementHeight) * 100;
     var percentChange = percentWidth < percentHeight ? percentWidth : percentHeight;
     var startRulerUnits = app.preferences.rulerUnits;
-    copiedSymbol.rasterize(RasterizeType.ENTIRELAYER);
+    copiedElement.rasterize(RasterizeType.ENTIRELAYER);
     app.preferences.rulerUnits = Units.PERCENT;
-    copiedSymbol.resize(percentChange, percentChange, AnchorPosition.MIDDLECENTER);
+    copiedElement.resize(percentChange, percentChange, AnchorPosition.MIDDLECENTER);
     app.preferences.rulerUnits = startRulerUnits;
 }
 
 function mergeGroup() {
-    var newGroup = copiedSymbols.layerSets["Group 1"];
+    var newGroup = copiedElements.layerSets["Group 1"];
     newGroup.merge();
-    var newLayer = copiedSymbols.layers["Group 1"];
+    var newLayer = copiedElements.layers["Group 1"];
     app.activeDocument.activeLayer = newLayer;
     newLayer.name = "merged_group";
     return newLayer;
