@@ -10,43 +10,51 @@ Object.keys = objKeysPolyfill();
 // Testing
 createCards([
     {
-        toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
+        toggles: [ "small_lower_parchment", "stone_circle_left", "stone_circle_right", "title_background", "green_fields" ],
         text: {
-            "title": "Hello world A1",
-            "sub_title": "We are working A1",
-            "desc": "And one day we will ride upon the heels of victory. A1"
+            "title": "Hello world",
+            "desc": "Lorem ipsum dolor sit amet, consectetur."
         },
         elements: {
-            "mod_1_1": "wonder"
         },
         print: true
     }, {
-        toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
+        toggles: [ "parchment", "stone_circle_left", "stone_circle_right", "title_background", "pink_flowers" ],
         text: {
-            "title": "Hello world B1",
-            "sub_title": "We are working B1",
-            "desc": "And one day we will ride upon the heels of victory. B1"
+            "title": "Hello world",
+            "sub_title": "We are working",
+            "desc": "Lorem ipsum dolor sit amet, consectetur."
         },
         elements: {
             "mod_2_1": "wealth",
-            "mod_2_2": "food",
+            "mod_2_2": "victory_point",
+        },
+        print: true
+    }, {
+        toggles: [ "small_upper_parchment", "pink_flowers" ],
+        text: {
+        },
+        elements: {
+            "mod_3_1": "food",
+            "mod_3_2": "wood",
+            "mod_3_3": "iron"
         },
         print: true
     }
 ], {
     rows: 1,
-    columns: 2,
+    columns: 3,
     clean: {
-        toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
+        toggles: [ "parchment", "stone_circle_left", "stone_circle_right", "title_background", "green_fields" ],
         text: {
             "title": "Hello world",
             "sub_title": "We are working",
-            "desc": "And one day we will ride upon the heels of victory."
+            "desc": "Lorem ipsum dolor sit amet, consectetur."
         },
         elements: {
-            "mod_3_1": "wealth",
-            "mod_3_2": "wealth",
-            "mod_3_3": "wealth"
+            "mod_3_1": "food",
+            "mod_3_2": "wood",
+            "mod_3_3": "iron"
         },
         print: true
     }
