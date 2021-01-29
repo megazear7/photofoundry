@@ -18,7 +18,7 @@ createCards([
             "desc": "And one day we will ride upon the heels of victory. A"
         },
         icons: {
-            "": ""
+            "mod_1_1": "wonder"
         },
         print: true
     }, {
@@ -29,7 +29,7 @@ createCards([
             "desc": "And one day we will ride upon the heels of victory. B"
         },
         icons: {
-            "": ""
+            "mod_1_1": "wonder"
         },
         print: true
     }
@@ -44,7 +44,9 @@ createCards([
             "desc": "And one day we will ride upon the heels of victory."
         },
         icons: {
-            "": ""
+            "mod_3_1": "wealth",
+            "mod_3_2": "wealth",
+            "mod_3_3": "wealth"
         },
         print: true
     }
@@ -112,7 +114,7 @@ function prep(item, config) {
         updateText(location, content, config);
     });
 
-    forEach(item.icon ? item.icon : [], function(location, iconName) {
+    forEach(item.icons ? item.icons : [], function(location, iconName) {
         updateIcon(location, iconName, config);
     });
 
@@ -122,24 +124,30 @@ function prep(item, config) {
 }
 
 function updateText(location, content, config) {
-    try {
+    if (config.alert && ! doesLayerExist(text.layers, location)) {
+        alert("No text found with name " + location);
+    } else {
         var layer = text.layers[location];
         layer.visible = true;
         layer.textItem.contents = content;
-    } catch (err) {
-        if (config.alert) {
-            alert("No text element found with name " + location);
-        }
     }
 }
 
 function updateIcon(location, iconName, config) {
-    // TODO
+    if (config.alert && ! doesLayerExist(locations.layers, location)) {
+        alert("No symbol found with name " + location);
+    } else {
+        copyToReference(iconName, locations.layers[location]);
+    }
 }
 
 function updateToggle(location, config) {
-    var layer = toggles.layers[location];
-    layer.visible = true;
+    if (config.alert && ! doesLayerExist(toggles.layers, location)) {
+        alert("No toggle found with name " + location);
+    } else {
+        var layer = toggles.layers[location];
+        layer.visible = true;
+    }
 }
 
 function setup() {
@@ -229,6 +237,84 @@ function printer(columns, rows) {
         sheetDoc.close(SaveOptions.DONOTSAVECHANGES);
         app.activeDocument = mainDocument;
     };
+}
+
+function copyToReference(symbolName, locRef) {
+    var symbolRef = symbols.layers[symbolName];
+    var copiedSymbol = symbolRef.duplicate(copiedSymbols, ElementPlacement.PLACEATEND);
+    groupLayer(copiedSymbol);
+    var rasterizedSymbol = mergeGroup();
+    resizeByRef(rasterizedSymbol, locRef);
+    moveToReference(rasterizedSymbol, locRef);
+    rasterizedSymbol.visible = true;
+    locRef.visible = false;
+}
+
+function doesLayerExist(layers, name) {
+    for (i=0; i<layers.length; i++) {
+        if (layers[i].name==name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function groupLayer(layer){
+    var oldActiveLayer = app.activeDocument.activeLayer;
+    app.activeDocument.activeLayer = layer;
+    var idGrp = stringIDToTypeID( "groupLayersEvent" );
+    var descGrp = new ActionDescriptor();
+    var refGrp = new ActionReference();
+    refGrp.putEnumerated(charIDToTypeID( "Lyr " ),charIDToTypeID( "Ordn" ),charIDToTypeID( "Trgt" ));
+    descGrp.putReference(charIDToTypeID( "null" ), refGrp );
+    executeAction( idGrp, descGrp, DialogModes.NO );
+    app.activeDocument.activeLayer = oldActiveLayer;
+}
+
+function moveToReference(copiedSymbol, locRef) {
+    var refBounds = locRef.bounds;
+    var copiedBounds = copiedSymbol.bounds;
+    var symbolRefWidth = refBounds[2] - refBounds[0];
+    var symbolRefHeight = refBounds[3] - refBounds[1];
+    var copiedSymbolWidth = copiedBounds[2] - copiedBounds[0];
+    var copiedSymbolHeight = copiedBounds[3] - copiedBounds[1];
+    var xOffset = 0;
+    var yOffset = 0;
+
+    if (copiedSymbolWidth < symbolRefWidth) {
+        xOffset = (symbolRefWidth - copiedSymbolWidth) / 2;
+    }
+    if (copiedSymbolHeight < symbolRefHeight) {
+        yOffset = (symbolRefHeight - copiedSymbolHeight) / 2;
+    }
+
+    copiedSymbol.translate(refBounds[0] - copiedBounds[0] + xOffset, refBounds[1] - copiedBounds[1] + yOffset);
+}
+
+function resizeByRef(copiedSymbol, locRef) {
+    var refBounds = locRef.bounds;
+    var copiedBounds = copiedSymbol.bounds;
+    var symbolRefWidth = refBounds[2] - refBounds[0];
+    var symbolRefHeight = refBounds[3] - refBounds[1];
+    var copiedSymbolWidth = copiedBounds[2] - copiedBounds[0];
+    var copiedSymbolHeight = copiedBounds[3] - copiedBounds[1];
+    var percentWidth = (symbolRefWidth / copiedSymbolWidth) * 100;
+    var percentHeight = (symbolRefHeight / copiedSymbolHeight) * 100;
+    var percentChange = percentWidth < percentHeight ? percentWidth : percentHeight;
+    var startRulerUnits = app.preferences.rulerUnits;
+    copiedSymbol.rasterize(RasterizeType.ENTIRELAYER);
+    app.preferences.rulerUnits = Units.PERCENT;
+    copiedSymbol.resize(percentChange, percentChange, AnchorPosition.MIDDLECENTER);
+    app.preferences.rulerUnits = startRulerUnits;
+}
+
+function mergeGroup() {
+    var newGroup = copiedSymbols.layerSets["Group 1"];
+    newGroup.merge();
+    var newLayer = copiedSymbols.layers["Group 1"];
+    app.activeDocument.activeLayer = newLayer;
+    newLayer.name = "merged_group";
+    return newLayer;
 }
 
 function placeFile(file) {
