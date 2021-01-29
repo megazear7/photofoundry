@@ -1,6 +1,6 @@
 var mainDocument = app.activeDocument;
 var symbols = activeDocument.layerSets["symbols"];
-var copied_symbols = activeDocument.layerSets["copied_symbols"];
+var copiedSymbols = activeDocument.layerSets["copied_symbols"];
 var text = activeDocument.layerSets["text"];
 var locations = activeDocument.layerSets["locations"];
 var toggles = activeDocument.layerSets["toggles"];
@@ -89,15 +89,24 @@ function createCards(items, config) {
 }
 
 function prep(item) {
-    // TODO Loop through each of these and show/update the specified child layers.
-    // text, locations, toggles
+    forEach(item.text ? item.text : [], function(location, content) {
+        updateText(location, content);
+    });
+
+    forEach(item.icon ? item.icon : [], function(location, iconName) {
+        updateIcon(location, iconName);
+    });
+
+    forEach(item.toggles ? item.toggles : [], function(toggleName) {
+        updateToggle(toggleName);
+    });
 }
 
-function updateText(loc, text) {
+function updateText(location, text) {
     // TODO
 }
 
-function updateIcon(loc, iconName) {
+function updateIcon(location, iconName) {
     // TODO
 }
 
@@ -106,18 +115,50 @@ function updateToggle(toggleName) {
 }
 
 function setup() {
-    copied_symbols.visible = true;
+    copiedSymbols.visible = true;
     text.visible = true;
     locations.visible = true;
     toggles.visible = true;
 
-    // TODO Loop through each of these and hide the child layers.
-    // text, locations, toggles
+    hideLayers(text.layers);
+    hideLayers(locations.layers);
+    hideLayers(toggles.layers);
 
-    // TODO Delete all teh child layers of copied_symbols
+    for (var i = 0; i < text.layers.length; i++) {
+        var layer = text.layers[i];
+        layer.visible = false;
+    }
+
+    deleteLayers(copiedSymbols.layers);
 
     symbols.visible = false;
     instructions = false;
+}
+
+function deleteLayers(layers) {
+    forEach(layers, function(layer) {
+        layer.remove();
+    });
+}
+
+function hideLayers(layers) {
+    forEach(layers, function(layer) {
+        layer.visible = false;
+    });
+}
+
+function forEach(obj, func) {
+    if (obj.length === 0 || obj.length) {
+        for (var i = 0; i < obj.length; i++) {
+            func(obj[i]);
+        }
+    } else {
+        var keys = keysOfObject(obj);
+
+        for (var i = 0; i < keys.length; i++) {
+            func(keys[i], obj[keys[i]]);
+        }
+    }
 }
 
 function make(index, cardPaths) {
@@ -201,3 +242,42 @@ function initConfig(config) {
 
     return config;
 }
+
+// "Polyfill" Object.keys
+function keysOfObject() {
+    var hasOwnProperty = Object.prototype.hasOwnProperty,
+        hasDontEnumBug = !({
+            toString: null
+        }).propertyIsEnumerable('toString'),
+
+        dontEnums = [
+            'toString',
+            'toLocaleString',
+            'valueOf',
+            'hasOwnProperty',
+            'isPrototypeOf',
+            'propertyIsEnumerable',
+            'constructor'
+        ],
+        dontEnumsLength = dontEnums.length;
+    return function(obj) {
+        if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
+            throw new TypeError('Object.keys called on non-object');
+        }
+        var result = [],
+            prop, i;
+        for (prop in obj) {
+            if (hasOwnProperty.call(obj, prop)) {
+                result.push(prop);
+            }
+        }
+        if (hasDontEnumBug) {
+            for (i = 0; i < dontEnumsLength; i++) {
+                if (hasOwnProperty.call(obj, dontEnums)) {
+                    result.push(dontEnums);
+                }
+            }
+        }
+        return result;
+    };
+};
