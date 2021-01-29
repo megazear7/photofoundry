@@ -17,8 +17,20 @@ createCards([
             "": ""
         },
         print: true
+    }, {
+        toggles: [ ],
+        text: {
+            "title": "Hello world 2"
+        },
+        icons: {
+            "": ""
+        },
+        print: true
     }
-]);
+], {
+    rows: 1,
+    columns: 2
+});
 
 /**
  * 
@@ -111,11 +123,11 @@ function setup() {
 function make(index, cardPaths) {
     var fileName = "item-" + index;
 
-    cardPaths[index-1] = activeDocument.path.fullName + "/" + fileName + ".jpg";
+    cardPaths[index-1] = mainDocument.path.fullName + "/" + fileName + ".jpg";
     var fileRef = new File(cardPaths[index-1]);
     var jpegOptions = new JPEGSaveOptions();
     jpegOptions.quality = 12;
-    activeDocument.saveAs(fileRef, jpegOptions, true);
+    mainDocument.saveAs(fileRef, jpegOptions, true);
 
     return cardPaths;
 }
@@ -136,14 +148,13 @@ function printer(columns, rows) {
                 var fileObj = File(cardPaths[i]);
                 if (fileObj.exists) {
                     placeFile(fileObj);
-                    fileObj.remove();
-                    var newLayer = sheetDoc.layers["tmp-" + (i + 1)];
+                    var newLayer = sheetDoc.layers["item-" + (i + 1)];
                     moveLayer(newLayer, i+1);
                 }
             }
         }
-    
-        var fileRef = new File(activeDocument.path.fullName + "/" + sheetName + ".jpg");
+
+        fileRef = new File(mainDocument.path.fullName + "/" + sheetName + ".jpg");
         var jpegOptions = new JPEGSaveOptions();
         jpegOptions.quality = 12;
         sheetDoc.saveAs(fileRef, jpegOptions, true);
@@ -152,11 +163,40 @@ function printer(columns, rows) {
     };
 }
 
+function placeFile(file) {
+    var desc21 = new ActionDescriptor();
+    desc21.putPath( charIDToTypeID('null'), new File(file) );
+    desc21.putEnumerated( charIDToTypeID('FTcs'), charIDToTypeID('QCSt'), charIDToTypeID('Qcsa') );
+    var desc22 = new ActionDescriptor();
+    desc22.putUnitDouble( charIDToTypeID('Hrzn'), charIDToTypeID('#Pxl'), 0.000000 );
+    desc22.putUnitDouble( charIDToTypeID('Vrtc'), charIDToTypeID('#Pxl'), 0.000000 );
+    desc21.putObject( charIDToTypeID('Ofst'), charIDToTypeID('Ofst'), desc22 );
+    executeAction( charIDToTypeID('Plc '), desc21, DialogModes.NO );
+}
+
+function moveLayer(layer, cardPos) {
+    var position = layer.bounds;
+    var cardXPos = (cardPos-1) % 4;
+    var cardYPos = Math.floor((cardPos-1) / 4);
+    var width = (position[2].value) - (position[0].value);
+    var height = (position[3].value) - (position[1].value);
+    var moveX = cardXPos * width;
+    var moveY = cardYPos * height;
+    moveLayerTo(layer, moveX , moveY);
+}
+
+function moveLayerTo(fLayer,fX,fY) {
+    var position = fLayer.bounds;
+    position[0] = fX - position[0];
+    position[1] = fY - position[1];
+    fLayer.translate(-position[0],-position[1]);
+}
+
 function initConfig(config) {
     if (!config) config = {};
     if (!config.folder) config.folder = activeDocument.path.fullName;
-    if (!config.printColumns) config.columns = 1;
-    if (!config.printColumns) config.rows = 1;
+    if (!config.columns) config.columns = 1;
+    if (!config.rows) config.rows = 1;
     if (!config.clean) config.clean = { };
 
     return config;
