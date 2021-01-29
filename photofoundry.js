@@ -6,21 +6,27 @@ var locations = activeDocument.layerSets["locations"];
 var toggles = activeDocument.layerSets["toggles"];
 var instructions = activeDocument.layerSets["instructions"];
 
+Object.keys = objKeysPolyfill();
+
 // Testing
 createCards([
     {
-        toggles: [ ],
+        toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
         text: {
-            "title": "Hello world"
+            "title": "Hello world A",
+            "sub_title": "We are working A",
+            "desc": "And one day we will ride upon the heels of victory. A"
         },
         icons: {
             "": ""
         },
         print: true
     }, {
-        toggles: [ ],
+        toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
         text: {
-            "title": "Hello world 2"
+            "title": "Hello world B",
+            "sub_title": "We are working B",
+            "desc": "And one day we will ride upon the heels of victory. B"
         },
         icons: {
             "": ""
@@ -29,7 +35,19 @@ createCards([
     }
 ], {
     rows: 1,
-    columns: 2
+    columns: 2,
+    clean: {
+        toggles: [ "Square parchment", "Stone circle left", "Stone circle right", "cost_background", "combat_background", "ability_background", "title_background", "green" ],
+        text: {
+            "title": "Hello world",
+            "sub_title": "We are working",
+            "desc": "And one day we will ride upon the heels of victory."
+        },
+        icons: {
+            "": ""
+        },
+        print: true
+    }
 });
 
 /**
@@ -51,6 +69,7 @@ createCards([
  *  columns: If you want to combine the items into "sheets" this is the number of columns per sheet. Default is 1.
  *  rows: If you want to combine the items into "sheets" this is the number of rows per sheet. Default is 1.
  *  clean: A default item to 'reset' the photoshop file to. This object should be configured as described in the 'items' parameter.
+ *  alert: If true the script will alert you of errors as it runs. The default is false.
  * }
  */
 function createCards(items, config) {
@@ -73,7 +92,7 @@ function createCards(items, config) {
                 cardPathIndex = 1;
             }
 
-            prep(item);
+            prep(item, config);
             cardPaths = make(cardPathIndex, cardPaths);
             cardIndex = cardIndex + 1;
             cardPathIndex = cardPathIndex + 1;
@@ -84,34 +103,43 @@ function createCards(items, config) {
         printSheet(sheetIndex, cardPaths);
     }
     setup();
-    prep(config.clean);
+    prep(config.clean, config);
     alert("Creation complete");
 }
 
-function prep(item) {
+function prep(item, config) {
     forEach(item.text ? item.text : [], function(location, content) {
-        updateText(location, content);
+        updateText(location, content, config);
     });
 
     forEach(item.icon ? item.icon : [], function(location, iconName) {
-        updateIcon(location, iconName);
+        updateIcon(location, iconName, config);
     });
 
     forEach(item.toggles ? item.toggles : [], function(toggleName) {
-        updateToggle(toggleName);
+        updateToggle(toggleName, config);
     });
 }
 
-function updateText(location, text) {
+function updateText(location, content, config) {
+    try {
+        var layer = text.layers[location];
+        layer.visible = true;
+        layer.textItem.contents = content;
+    } catch (err) {
+        if (config.alert) {
+            alert("No text element found with name " + location);
+        }
+    }
+}
+
+function updateIcon(location, iconName, config) {
     // TODO
 }
 
-function updateIcon(location, iconName) {
-    // TODO
-}
-
-function updateToggle(toggleName) {
-    // TODO
+function updateToggle(location, config) {
+    var layer = toggles.layers[location];
+    layer.visible = true;
 }
 
 function setup() {
@@ -153,8 +181,7 @@ function forEach(obj, func) {
             func(obj[i]);
         }
     } else {
-        var keys = keysOfObject(obj);
-
+        var keys = Object.keys(obj);
         for (var i = 0; i < keys.length; i++) {
             func(keys[i], obj[keys[i]]);
         }
@@ -239,12 +266,13 @@ function initConfig(config) {
     if (!config.columns) config.columns = 1;
     if (!config.rows) config.rows = 1;
     if (!config.clean) config.clean = { };
+    if (!config.alert) config.alert = false;
 
     return config;
 }
 
 // "Polyfill" Object.keys
-function keysOfObject() {
+function objKeysPolyfill() {
     var hasOwnProperty = Object.prototype.hasOwnProperty,
         hasDontEnumBug = !({
             toString: null
@@ -280,4 +308,4 @@ function keysOfObject() {
         }
         return result;
     };
-};
+}
