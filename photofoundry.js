@@ -47,24 +47,30 @@ function createCards(items, config) {
     var itemsPerSheet = config.columns * config.rows;
     var sheetIndex = 1;
     var cardIndex = 1;
+    var cardPathIndex = 1;
+    var cardPaths = [];
 
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
         if (item.print) {
             setup();
 
-            if ((cardIndex-1) >= itemsPerSheet) {
-                printSheet(sheetIndex);
-                cardIndex = 1;
+            if (itemsPerSheet > 1 && (cardIndex-1) >= itemsPerSheet) {
+                printSheet(sheetIndex, cardPaths);
+                sheetIndex = sheetIndex + 1;
+                cardPathIndex = 1;
             }
 
             prep(item);
-            make(cardIndex);
+            cardPaths = make(cardPathIndex, cardPaths);
             cardIndex = cardIndex + 1;
+            cardPathIndex = cardPathIndex + 1;
         }
     }
 
-    printSheet(sheetIndex);
+    if (itemsPerSheet > 1) {
+        printSheet(sheetIndex, cardPaths);
+    }
     setup();
     prep(config.clean);
     alert("Creation complete");
@@ -102,18 +108,20 @@ function setup() {
     instructions = false;
 }
 
-function make(index) {
-    var fileName = "tmp-" + index + ".jpg";
+function make(index, cardPaths) {
+    var fileName = "item-" + index;
 
-    cardPaths[index-1] = activeDocument.path.fullName + "/tmp/" + fileName;
+    cardPaths[index-1] = activeDocument.path.fullName + "/" + fileName + ".jpg";
     var fileRef = new File(cardPaths[index-1]);
     var jpegOptions = new JPEGSaveOptions();
     jpegOptions.quality = 12;
     activeDocument.saveAs(fileRef, jpegOptions, true);
+
+    return cardPaths;
 }
 
-function printer(columns, rows, saveLocation) {
-    return function(index) {
+function printer(columns, rows) {
+    return function(index, cardPaths) {
         app.preferences.rulerUnits = Units.INCHES;
 
         var sheetName = "sheet-" + index;
@@ -123,7 +131,7 @@ function printer(columns, rows, saveLocation) {
 
         app.preferences.rulerUnits = Units.PIXELS;
     
-        for (var i = 0; i < cardsPerSheet; i++) {
+        for (var i = 0; i < columns * rows; i++) {
             if (cardPaths.length > i) {
                 var fileObj = File(cardPaths[i]);
                 if (fileObj.exists) {
@@ -135,7 +143,7 @@ function printer(columns, rows, saveLocation) {
             }
         }
     
-        var fileRef = new File(saveLocation + "/" + sheetName + ".jpg");
+        var fileRef = new File(activeDocument.path.fullName + "/" + sheetName + ".jpg");
         var jpegOptions = new JPEGSaveOptions();
         jpegOptions.quality = 12;
         sheetDoc.saveAs(fileRef, jpegOptions, true);
