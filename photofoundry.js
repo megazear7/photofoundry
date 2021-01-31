@@ -7,59 +7,6 @@ var toggles = activeDocument.layerSets["toggles"];
 
 Object.keys = objKeysPolyfill();
 
-// Testing
-createCards([
-    {
-        toggles: [ "small_lower_parchment", "stone_circle_left", "stone_circle_right", "title_background", "green_fields" ],
-        text: {
-            "title": "Hello world",
-            "desc": "Lorem ipsum dolor sit amet, consectetur."
-        },
-        elements: {
-        },
-        print: true
-    }, {
-        toggles: [ "parchment", "stone_circle_left", "stone_circle_right", "title_background", "pink_flowers" ],
-        text: {
-            "title": "Hello world",
-            "sub_title": "We are working",
-            "desc": "Lorem ipsum dolor sit amet, consectetur."
-        },
-        elements: {
-            "mod_2_1": "wealth",
-            "mod_2_2": "victory_point",
-        },
-        print: true
-    }, {
-        toggles: [ "small_upper_parchment", "pink_flowers" ],
-        text: {
-        },
-        elements: {
-            "mod_3_1": "food",
-            "mod_3_2": "wood",
-            "mod_3_3": "iron"
-        },
-        print: true
-    }
-], {
-    rows: 1,
-    columns: 3,
-    clean: {
-        toggles: [ "parchment", "stone_circle_left", "stone_circle_right", "title_background", "green_fields" ],
-        text: {
-            "title": "Hello world",
-            "sub_title": "We are working",
-            "desc": "Lorem ipsum dolor sit amet, consectetur."
-        },
-        elements: {
-            "mod_3_1": "food",
-            "mod_3_2": "wood",
-            "mod_3_3": "iron"
-        },
-        print: true
-    }
-});
-
 /**
  * 
  * @param array items An array of object, each object containing the following format:
@@ -82,7 +29,7 @@ createCards([
  *  alert: If true the script will alert you of errors as it runs. The default is false.
  * }
  */
-function createCards(items, config) {
+function createImages(items, config) {
     var config = initConfig(config);
     var printSheet = printer(config.columns, config.rows, config.folder);
     var itemsPerSheet = config.columns * config.rows;
@@ -239,7 +186,7 @@ function printer(columns, rows) {
                 if (fileObj.exists) {
                     placeFile(fileObj);
                     var newLayer = sheetDoc.layers["item-" + (i + 1)];
-                    moveLayer(newLayer, i+1);
+                    moveLayer(newLayer, i+1, columns);
                 }
             }
         }
@@ -342,10 +289,10 @@ function placeFile(file) {
     executeAction( charIDToTypeID('Plc '), desc21, DialogModes.NO );
 }
 
-function moveLayer(layer, cardPos) {
+function moveLayer(layer, cardPos, columns) {
     var position = layer.bounds;
-    var cardXPos = (cardPos-1) % 4;
-    var cardYPos = Math.floor((cardPos-1) / 4);
+    var cardXPos = (cardPos-1) % columns;
+    var cardYPos = Math.floor((cardPos-1) / columns);
     var width = (position[2].value) - (position[0].value);
     var height = (position[3].value) - (position[1].value);
     var moveX = cardXPos * width;
@@ -408,4 +355,28 @@ function objKeysPolyfill() {
         }
         return result;
     };
+}
+
+function times(count, card) {
+    var cards = [];
+    for (var i = 0; i < count; i++) {
+        cards = cards.concat(card);
+    }
+    return cards;
+}
+
+function flatten(cardsToAdd) {
+    var cards = [];
+
+    for (var i = 0; i < cardsToAdd.length; i++) {
+        if (cardsToAdd[i].length && cardsToAdd[i].length > 0) {
+            for (var j = 0; j < cardsToAdd[i].length; j++) {
+                cards = cards.concat(cardsToAdd[i][j]);
+            }
+        } else {
+            cards = cards.concat(cardsToAdd[i]);
+        }
+    }
+
+    return cards;
 }
