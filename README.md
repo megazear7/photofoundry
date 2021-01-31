@@ -1,14 +1,13 @@
 # Photofoundry
 With Photofoundry you can use build images from JSON. It is a Photoshop script that requires a specifically formatted Photoshop file. This script is provided with an array of JSON data that manipualtes that file and saves an image for each item in the array.
 
-##### Use case
+### Use case
 Photofoundry is great when you need lots of slight variations to the same basic template. My original use case for building this tool was to create cards for a game. I needed to be able to create hundreds of cards with slight variations. I also needed to be able to quickly make changes to lots of cards, and then reprint the new versions. This automates all of that otherwise tedius work.
 
-##### Limitations
+### Limitations
 Some limitations of Photofoundry are that it only saves to JPG (although this could be easily enhanced) and that the template file must be of a certain size. Each image it produces will have the same dimensions.
 
-
-##### The provided template
+### The provided template
 It comes with a Photoshop template to start from. If you run the Photofoundry script on the provided template, it will generate the following files
 
 * item-1.jpg
@@ -27,19 +26,19 @@ To use Photofoundry, you first need to update the provided template PSD file. In
 - locations
 - toggles
 
-#### Elements
+### Elements
 The elements folder contains a set of layers that the script can automatically copy, move, and resize. Think of these as the primary "pieces" that the script will put together in order to make your image. You could put in here icons, banners, images, etc. These layers should be large. Since the script will resize them, they should be larger that their final size.
 
-#### Copied elements
+### Copied elements
 This folder is for the script to place the temporary layers that it creates based on your JSON (which will be explained more below). You can leave this alone for now.
 
-#### Text
+### Text
 This folder contains text areas that you want the script to have access to. Each text area needs a predefined area, font size, and text effects. The script will be able to update the text based on the provided JSON. The name of each layer is how the script will know which layer to update. Any layer that is not provided a string in the JSON will be hidden.
 
-#### Locations
+### Locations
 This folder contains layers that represent locations on the file that the elements will get copied to. The element will be resized to fit into the location (while maintaining the aspect ratio of the original element).
 
-#### Toggles
+### Toggles
 This folder is the most simple. This is just a set of layers that the JSON can hide and show.
 
 ### Crafting JSON to create images
