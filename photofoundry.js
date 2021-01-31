@@ -30,7 +30,8 @@ Object.keys = objKeysPolyfill();
  * }
  */
 function photofoundry(items, config) {
-    var config = initConfig(config);
+    var mappedItems = [];
+    var config = initConfig(items, config);
     var printSheet = printer(config.columns, config.rows, config.folder);
     var itemsPerSheet = config.columns * config.rows;
     var sheetIndex = 1;
@@ -39,7 +40,11 @@ function photofoundry(items, config) {
     var cardPaths = [];
 
     for (var i = 0; i < items.length; i++) {
-        var item = items[i];
+        mappedItems[i] = config.mapping(items[i]);
+    }
+
+    for (var i = 0; i < mappedItems.length; i++) {
+        var item = mappedItems[i];
         if (item.print) {
             setup();
 
@@ -307,13 +312,26 @@ function moveLayerTo(fLayer,fX,fY) {
     fLayer.translate(-position[0],-position[1]);
 }
 
-function initConfig(config) {
+function initConfig(items, config) {
     if (!config) config = {};
     if (!config.folder) config.folder = activeDocument.path.fullName;
     if (!config.columns) config.columns = 1;
     if (!config.rows) config.rows = 1;
-    if (!config.clean) config.clean = { };
     if (!config.alert) config.alert = false;
+
+    if (!config.mapping) {
+        config.mapping = function(item) {
+            return item;
+        };
+    }
+
+    if (config.clean) {
+        config.clean = config.mapping(config.clean);
+    } else if (!config.clean && items.length >= 1) {
+        config.clean = config.mapping(items[0]);
+    } else {
+        config.clean = { };
+    }
 
     return config;
 }

@@ -77,9 +77,12 @@ The first parameter to the `photofoundry` method is the array of JSON objects th
  *  rows: If you want to combine the items into "sheets" this is the number of rows per sheet. Default is 1.
  *  clean: A default item to 'reset' the photoshop file to. This object should be configured as described in the 'items' parameter.
  *  alert: If true the script will alert you of errors as it runs. The default is false.
+ *  mapping: A function which converts JSON of some other format into a format that Photofoundry accepts.
 
 ### Mapping
-TODO
+Another JS file is provided called mapping-example.js. This JSON file shows an example of converting JSON of a different format into a format that Photofoundry accepts. The benefit of this is that you can write JSON in a format that makes sense to you and your use case, and automatically convert that before Photofoundry uses it to generate images.
+
+Additional logic can be added into the mapping function. For example, if your description text is longer than 120 characters, maybe you should use the `desc_long` text layer instead of `desc_short` text layer. Or, if you have one icon you should use the `mod_1_1` location layer, but if you have two icons you should use the `mod_2_1` and `mod_2_2` layers. These are examples of the kind of logic that you can bake into Photofoundry by using the mapping function.
 
 ### Provided helpers
 Photofoundry provides two methods to make creating the JSON easier. The first is the `times` method which will make an array of the JSON objects that you provide to the method. This allows you to create multiple copies of the same image. The `flatten` method flattens nested arrays before passing it to Photofoundry.
