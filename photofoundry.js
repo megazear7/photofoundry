@@ -29,7 +29,7 @@ Object.keys = objKeysPolyfill();
  *  alert: If true the script will alert you of errors as it runs. The default is false.
  * }
  */
-function createImages(items, config) {
+function photofoundry(items, config) {
     var config = initConfig(config);
     var printSheet = printer(config.columns, config.rows, config.folder);
     var itemsPerSheet = config.columns * config.rows;

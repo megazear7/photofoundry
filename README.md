@@ -8,14 +8,18 @@ Photofoundry is great when you need lots of slight variations to the same basic 
 Some limitations of Photofoundry are that it only saves to JPG (although this could be easily enhanced) and that the template file must be of a certain size. Each image it produces will have the same dimensions.
 
 ### The provided template
-It comes with a Photoshop template to start from. If you run the Photofoundry script on the provided template, it will generate the following files
+It comes with a Photoshop template to start from. If you open the `template.psd` file and run the `example.js` script, it will generate the following files:
 
 * item-1.jpg
 * item-2.jpg
 * item-3.jpg
+* item-4.jpg
 * sheet-1.jpg
 
-The first three files represent the three items from the JSON array. The fourth file is the same three images combined into a "sheet". By default the script will not produce sheets, but can be configured to combine the images into sheets with how many columns and rows you want. One reason to do this would be to combine your images into printable sheets so that you could then cut out the each image.
+The first four files represent the three items from the JSON array. The fourth file is the same three images combined into a "sheet". By default the script will not produce sheets, but can be configured to combine the images into sheets with how many columns and rows you want. One reason to do this would be to combine your images into printable sheets so that you could then cut out the each image.
+
+## Getting started
+To get started read this README thoroughly. Then look at the provided PSD template and the example.js file. Once you understand what is going on, start updating the JSON in the `data` method, using the different features of Photofoundry to generate new images. When you are ready, you can resize the template PSD file to be the dimensions you need, and you can start adding your own elements, text, and toggles. Finally, you can write your own JSON in the example.js file to generate your images.
 
 ## How to use Photofoundry
 To use Photofoundry, you first need to update the provided template PSD file. In this file you will see the following folders:
@@ -65,7 +69,25 @@ The `elements: { "mod_2_1": "wealth" }` is a bit more complicated. It will look 
 
 Finally, the `print: true` just tells the script to print this item of the JSON array. This is helpful to turn on and off the various items in the JSON array without having to delete the JSON. In this example only one toggle, text, and element was shown, but it could contain much more.
 
-### The power is yours
+### Configuration
+The first parameter to the `photofoundry` method is the array of JSON objects that you want to generate images for. The second parameter to the `photofoundry` method is a configuration with the following properties:
+
+ *  folder: The folder path that you want to save the files to. Default is the location of the photoshop files.
+ *  columns: If you want to combine the items into "sheets" this is the number of columns per sheet. Default is 1.
+ *  rows: If you want to combine the items into "sheets" this is the number of rows per sheet. Default is 1.
+ *  clean: A default item to 'reset' the photoshop file to. This object should be configured as described in the 'items' parameter.
+ *  alert: If true the script will alert you of errors as it runs. The default is false.
+
+### Mapping
+TODO
+
+### Provided helpers
+Photofoundry provides two methods to make creating the JSON easier. The first is the `times` method which will make an array of the JSON objects that you provide to the method. This allows you to create multiple copies of the same image. The `flatten` method flattens nested arrays before passing it to Photofoundry.
+
+### File placement
+The PSD file your JS file that you run, and the photofoundry.js file need to be in the same directory, which is the default setup. The images it generates will be created in the same directory. This git project has item- and sheet- files ignored so that the images you generate do not get added to git.
+
+## The power is yours
 This tool is incredible flexible and powerful. The text and toggles are one thing, but the flexibility of the element / location system is truly powerful. It is incredible easy to update the PSD file by replacing a few of the elements with new versions or changing their layer effects, and then rebuilding hundreds of cards automatically with the new layer effects applied to every use of that element on every image.
 
 On the other side, it is super quick to update the JSON with new locations, elements, text, and toggles, adding, removing, and chaning items in the JSON array, and then generate new versions of the images. This can be an iterative process, allowing you to see the end result, and then go back and tweak the JSON again until the images are what you want.
