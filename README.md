@@ -72,12 +72,13 @@ Finally, the `print: true` just tells the script to print this item of the JSON 
 ### Configuration
 The first parameter to the `photofoundry` method is the array of JSON objects that you want to generate images for. The second parameter to the `photofoundry` method is a configuration with the following properties:
 
- *  folder: The folder path that you want to save the files to. Default is the location of the photoshop files.
+ *  folder: The folder that you want to save the files to. Default is the location of the photoshop files.
  *  columns: If you want to combine the items into "sheets" this is the number of columns per sheet. Default is 1.
  *  rows: If you want to combine the items into "sheets" this is the number of rows per sheet. Default is 1.
  *  clean: A default item to 'reset' the photoshop file to. This object should be configured as described in the 'items' parameter.
  *  alert: If true the script will alert you of errors as it runs. The default is false.
  *  mapping: A function which converts JSON of some other format into a format that Photofoundry accepts.
+ *  deleteItems: Whether or not you want to delete the single item images after printing a sheet. Default is false.
 
 ### Mapping
 Another JS file is provided called mapping-example.js. This JSON file shows an example of converting JSON of a different format into a format that Photofoundry accepts. The benefit of this is that you can write JSON in a format that makes sense to you and your use case, and automatically convert that before Photofoundry uses it to generate images.

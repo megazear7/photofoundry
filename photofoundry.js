@@ -32,10 +32,9 @@ Object.keys = objKeysPolyfill();
 function photofoundry(items, config) {
     var mappedItems = [];
     var config = initConfig(items, config);
-    var printSheet = printer(config.columns, config.rows, config.folder);
+    var printSheet = printer(config.columns, config.rows, config.folder, config.deleteItems);
     var itemsPerSheet = config.columns * config.rows;
     var sheetIndex = 1;
-    var cardIndex = 1;
     var cardPathIndex = 1;
     var cardPaths = [];
 
@@ -48,15 +47,15 @@ function photofoundry(items, config) {
         if (item.print) {
             setup();
 
-            if (itemsPerSheet > 1 && (cardIndex-1) >= itemsPerSheet) {
+            if (itemsPerSheet > 1 && (cardPathIndex-1) >= itemsPerSheet) {
                 printSheet(sheetIndex, cardPaths);
                 sheetIndex = sheetIndex + 1;
                 cardPathIndex = 1;
+                cardPaths = [];
             }
 
             prep(item, config);
-            cardPaths = make(cardPathIndex, cardPaths);
-            cardIndex = cardIndex + 1;
+            cardPaths = make(cardPathIndex, cardPaths, config.folder);
             cardPathIndex = cardPathIndex + 1;
         }
     }
@@ -162,10 +161,10 @@ function forEach(obj, func) {
     }
 }
 
-function make(index, cardPaths) {
+function make(index, cardPaths, folder) {
     var fileName = "item-" + index;
 
-    cardPaths[index-1] = mainDocument.path.fullName + "/" + fileName + ".jpg";
+    cardPaths[index-1] = mainDocument.path.fullName + "/" + (folder ? folder + "/" : "") + fileName + ".jpg";
     var fileRef = new File(cardPaths[index-1]);
     var jpegOptions = new JPEGSaveOptions();
     jpegOptions.quality = 12;
@@ -174,7 +173,7 @@ function make(index, cardPaths) {
     return cardPaths;
 }
 
-function printer(columns, rows) {
+function printer(columns, rows, folder, deleteItems) {
     return function(index, cardPaths) {
         app.preferences.rulerUnits = Units.INCHES;
 
@@ -193,10 +192,13 @@ function printer(columns, rows) {
                     var newLayer = sheetDoc.layers["item-" + (i + 1)];
                     moveLayer(newLayer, i+1, columns);
                 }
+                if (deleteItems) {
+                    fileObj.remove();
+                }
             }
         }
 
-        fileRef = new File(mainDocument.path.fullName + "/" + sheetName + ".jpg");
+        fileRef = new File(mainDocument.path.fullName + "/" + (folder ? folder + "/" : "") + sheetName + ".jpg");
         var jpegOptions = new JPEGSaveOptions();
         jpegOptions.quality = 12;
         sheetDoc.saveAs(fileRef, jpegOptions, true);
@@ -314,10 +316,11 @@ function moveLayerTo(fLayer,fX,fY) {
 
 function initConfig(items, config) {
     if (!config) config = {};
-    if (!config.folder) config.folder = activeDocument.path.fullName;
+    if (!config.folder) config.folder = undefined;
     if (!config.columns) config.columns = 1;
     if (!config.rows) config.rows = 1;
     if (!config.alert) config.alert = false;
+    if (!config.deleteItems) config.deleteItems = false;
 
     if (!config.mapping) {
         config.mapping = function(item) {
