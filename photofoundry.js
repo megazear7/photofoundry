@@ -27,12 +27,13 @@ Object.keys = objKeysPolyfill();
  *  rows: If you want to combine the items into "sheets" this is the number of rows per sheet. Default is 1.
  *  clean: A default item to 'reset' the photoshop file to. This object should be configured as described in the 'items' parameter.
  *  alert: If true the script will alert you of errors as it runs. The default is false.
+ *  filetype: 'pdf' or 'jpg'. The default is 'jpg'.
  * }
  */
 function photofoundry(items, config) {
     var mappedItems = [];
     var config = initConfig(items, config);
-    var printSheet = printer(config.columns, config.rows, config.folder, config.deleteItems);
+    var printSheet = printer(config.columns, config.rows, config.filetype, config.folder, config.deleteItems);
     var itemsPerSheet = config.columns * config.rows;
     var sheetIndex = 1;
     var cardPathIndex = 1;
@@ -173,7 +174,7 @@ function make(index, cardPaths, folder) {
     return cardPaths;
 }
 
-function printer(columns, rows, folder, deleteItems) {
+function printer(columns, rows, filetype, folder, deleteItems) {
     return function(index, cardPaths) {
         app.preferences.rulerUnits = Units.INCHES;
 
@@ -198,13 +199,31 @@ function printer(columns, rows, folder, deleteItems) {
             }
         }
 
-        fileRef = new File(mainDocument.path.fullName + "/" + (folder ? folder + "/" : "") + sheetName + ".jpg");
-        var jpegOptions = new JPEGSaveOptions();
-        jpegOptions.quality = 12;
-        sheetDoc.saveAs(fileRef, jpegOptions, true);
-        sheetDoc.close(SaveOptions.DONOTSAVECHANGES);
+        if (filetype === "pdf") {
+            savePdf(sheetName, folder);
+        } else {
+            saveJpg(sheetName, folder);
+        }
         app.activeDocument = mainDocument;
     };
+}
+
+function saveJpg(sheetName, folder) {
+    var fileRef = new File(mainDocument.path.fullName + "/" + (folder ? folder + "/" : "") + sheetName + ".jpg");
+    var jpegOptions = new JPEGSaveOptions();
+    jpegOptions.quality = 12;
+    sheetDoc.saveAs(fileRef, jpegOptions, true);
+    sheetDoc.close(SaveOptions.DONOTSAVECHANGES);
+}
+
+function savePdf(sheetName, folder) {
+    var fileRef = new File(mainDocument.path.fullName + "/" + (folder ? folder + "/" : "") + sheetName + ".pdf");
+    var pdfOptions = new PDFSaveOptions();
+    pdfOptions.compatibility = "Acrobat 5 (PDF 1.4)";
+    pdfOptions.generateThumbnails = true;
+    pdfOptions.preserveEditability = false;
+    pdfOptions.preset = "[High Quality Print]";
+    app.activeDocument.saveAs(fileRef, pdfOptions);
 }
 
 function copyToReference(elementName, locRef) {
@@ -321,6 +340,7 @@ function initConfig(items, config) {
     if (!config.rows) config.rows = 1;
     if (!config.alert) config.alert = false;
     if (!config.deleteItems) config.deleteItems = false;
+    if (!config.filetype) config.filetype = "jpg";
 
     if (!config.mapping) {
         config.mapping = function(item) {
