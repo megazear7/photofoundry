@@ -200,15 +200,15 @@ function printer(columns, rows, filetype, folder, deleteItems) {
         }
 
         if (filetype === "pdf") {
-            savePdf(sheetName, folder);
+            savePdf(sheetDoc, sheetName, folder);
         } else {
-            saveJpg(sheetName, folder);
+            saveJpg(sheetDoc, sheetName, folder);
         }
         app.activeDocument = mainDocument;
     };
 }
 
-function saveJpg(sheetName, folder) {
+function saveJpg(sheetDoc, sheetName, folder) {
     var fileRef = new File(mainDocument.path.fullName + "/" + (folder ? folder + "/" : "") + sheetName + ".jpg");
     var jpegOptions = new JPEGSaveOptions();
     jpegOptions.quality = 12;
