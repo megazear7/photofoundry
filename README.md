@@ -95,3 +95,9 @@ The PSD file your JS file that you run, and the photofoundry.js file need to be 
 This tool is incredible flexible and powerful. The text and toggles are one thing, but the flexibility of the element / location system is truly powerful. It is incredible easy to update the PSD file by replacing a few of the elements with new versions or changing their layer effects, and then rebuilding hundreds of cards automatically with the new layer effects applied to every use of that element on every image.
 
 On the other side, it is super quick to update the JSON with new locations, elements, text, and toggles, adding, removing, and chaning items in the JSON array, and then generate new versions of the images. This can be an iterative process, allowing you to see the end result, and then go back and tweak the JSON again until the images are what you want.
+
+## Support
+
+[Buy me a coffee](https://www.buymeacoffee.com/alexlockhart)
+
+[Patreon](https://www.patreon.com/alexlockhart)
